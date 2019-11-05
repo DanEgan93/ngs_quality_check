@@ -284,6 +284,8 @@ def run_details(cmd,xls_rep,run_details_df):
     allele_balance = 'ERROR'
     bed_files = []
 
+
+
     # get ws names for the cmd file and
     cmd_ws = re.search(r'(\d{6})\.commandline_usage_logfile', cmd).group(1)
     xls_ws = re.search(r'(\d{6})-\d{2}-D\d{2}-\d{5}-\w{2,3}_S\d{1,2}\.v\d\.\d\.\d-results\.xlsx', xls_rep).group(1)
@@ -293,6 +295,8 @@ def run_details(cmd,xls_rep,run_details_df):
         raise Exception('The worksheet numbers: {} and {} do not match!'.format(cmd_ws, xls_ws))
 
     worksheet = cmd_ws
+    
+    
 
     # get experiment name from command output
     with open(cmd, 'r') as file:
