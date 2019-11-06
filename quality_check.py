@@ -34,9 +34,8 @@ import re
 # TODO add version of pipeline to input
 def get_inputs(ws_1, ws_2):
 
-
-    ws_1_run_info = re.search(r'\/([A-Z]*)_(\d{6})_(v\d\.\d\.\d)\/', ws_1)    
-    ws_2_run_info = re.search(r'\/([A-Z]*)_(\d{6})_(v\d\.\d\.\d)\/', ws_2)  
+    ws_1_run_info = re.search(r'\/(\w{4,7})_(\d{6})_(v\.\d\.\d\.\d)\/', ws_1)    
+    ws_2_run_info = re.search(r'\/(\w{4,7})_(\d{6})_(v\.\d\.\d\.\d)\/', ws_2)  
 
     ws_1_panel = ws_1_run_info.group(1)
     ws_1_name = ws_1_run_info.group(2)
@@ -45,14 +44,19 @@ def get_inputs(ws_1, ws_2):
     ws_2_name = ws_2_run_info.group(2)
     ws_2_version = ws_2_run_info.group(3)
     
+    if ws_1_panel == ws_2_panel:
+        panel = ws_1_panel
+    else:
+        raise Exception('Panels from ws_1 and ws_2 do not match!')
+
     # defining excel inputs
     ws_1_excel_reports = ws_1 + 'excel_reports_{}_{}/'.format(ws_1_panel, ws_1_name)
     ws_1_list = pd.DataFrame(os.listdir(ws_1_excel_reports), columns=['sample_name'])
     ws_2_excel_reports = ws_2 + 'excel_reports_{}_{}/'.format(ws_2_panel, ws_2_name)
     ws_2_list = pd.DataFrame(os.listdir(ws_2_excel_reports), columns=['sample_name'])
 
-    xls_rep_1 = ws_1_list[~ws_1_list['sample_name'].str.contains('Neg')]
-    xls_rep_2 = ws_2_list[~ws_2_list['sample_name'].str.contains('Neg')]
+    xls_rep_1 = ws_1_list[~ws_1_list['sample_name'].str.contains('Neg|-fastq-bam-check')]
+    xls_rep_2 = ws_2_list[~ws_2_list['sample_name'].str.contains('Neg|-fastq-bam-check')]
     neg_rep_1 = ws_1_list[ws_1_list['sample_name'].str.contains('Neg')]
     neg_rep_2 = ws_2_list[ws_2_list['sample_name'].str.contains('Neg')]
     fastq_xls_1 = ws_1_list[ws_1_list['sample_name'].str.contains('fastq-bam-check')]
@@ -82,7 +86,7 @@ def get_inputs(ws_1, ws_2):
     cmd_log_2 = ws_2 + '{}.commandline_usage_logfile'.format(ws_2_name)
     kin_xls = ws_1 + '{}_{}.king.xlsx'.format(ws_1_name, ws_2_name)
 
-    return xls_rep_1, xls_rep_2, neg_rep, fastq_bam_1, fastq_bam_2, kin_xls, vcf_dir_1, vcf_dir_2, cmd_log_1, cmd_log_2
+    return xls_rep_1, xls_rep_2, neg_rep, fastq_bam_1, fastq_bam_2, kin_xls, vcf_dir_1, vcf_dir_2, cmd_log_1, cmd_log_2, panel
 
 
 
@@ -91,13 +95,16 @@ def results_excel_check(res, check_result_df):
     # 8) Verify bam id check
 
     # create dfs with data from excel output
+
     xls = pd.ExcelFile(res)
+
     hybqc_df = pd.read_excel(xls, 'Hyb-QC')
     verify_bam_id_df = pd.read_excel(xls, 'VerifyBamId')
     
     worksheet_name = re.search(r'\/(\d{6})-.*', res).group(1)
     
     # list of all % coverage at 20x (excluding control) 
+
     coverage_list = hybqc_df[~hybqc_df['Sample'].str.contains('D00-00000')]['PCT_TARGET_BASES_20X'].values
     coverage_check = '20x coverage check'
     coverage_check_des = 'A check to determine if all samples are 96% 20x'
@@ -137,9 +144,9 @@ def neg_excel_check(neg_xls, check_result_df):
 
     # number of exons check
     num_exons_check = 'Number of exons'
-    num_exons_check_des = 'A check to determine if 1419 exons are present in the negative control'
+    num_exons_check_des = 'A check to determine if 1196 exons are present in the negative control (Coverage-exon tab)'
     
-    if len(neg_exon_df) == 1419:
+    if len(neg_exon_df) == 1196:
         num_exons_check_result = 'PASS'
     else:
         num_exons_check_result = 'FAIL'
@@ -256,15 +263,17 @@ def fastq_bam_check(fastq_xls, check_result_df):
 
     return check_result_df
 
-def generate_html_output(check_result_df, run_details_df, output_dir):
-    html = check_result_df.to_html(index=False, justify='left')
-    cmd = run_details_df.to_html(index=False, justify='left') + '\n<br>\n'
-    html = cmd + html
-    ws_names = "_".join(run_details_df['Worksheet'].values.tolist()) + '_quality_checks.html'
+def generate_html_output(check_result_df, run_details_df, output_dir, panel):
+    base_html = '<h1>{} Quality Report<h1/><h3>Run details<h3/>'.format(panel)
+    run_html = run_details_df.to_html(index=False, justify='left') + '<h3>Checks<h3/>'
+    check_html = check_result_df.to_html(index=False, justify='left')
+    html = base_html + run_html + check_html
+
+    file_name = "_".join(run_details_df['Worksheet'].values.tolist()) + '_quality_checks.html'
 
     os.chdir(output_dir)
 
-    with open(ws_names, 'w') as file:
+    with open(file_name, 'w') as file:
         file.write(html)
 
 def run_details(cmd,xls_rep,run_details_df):
@@ -288,21 +297,22 @@ def run_details(cmd,xls_rep,run_details_df):
 
     # get ws names for the cmd file and
     cmd_ws = re.search(r'(\d{6})\.commandline_usage_logfile', cmd).group(1)
-    xls_ws = re.search(r'(\d{6})-\d{2}-D\d{2}-\d{5}-\w{2,3}_S\d{1,2}\.v\d\.\d\.\d-results\.xlsx', xls_rep).group(1)
+
+    xls_ws = re.search(r'(\d{6})-\d{2}-D\d{2}-\d{5}-\w{2,3}-\w+-\d{3}_S\d\.v\d\.\d\.\d-results\.xlsx', xls_rep).group(1)
 
     # check that the cmd and xls report are from the same worksheet
     if cmd_ws != xls_ws:
         raise Exception('The worksheet numbers: {} and {} do not match!'.format(cmd_ws, xls_ws))
 
     worksheet = cmd_ws
-    
-    
+
 
     # get experiment name from command output
     with open(cmd, 'r') as file:
         cmd_text = file.read()
-    search_term = r'-s\s\n\/network\/sequenced\/MiSeq_data\/\w*\/shire_worksheet_numbered\/' + re.escape(worksheet) + r'\/(\d{6}_M\d{5}_\d{4}_\d{9}-\w{5})\/SampleSheet.csv'
-    experiment_name = re.search(search_term, cmd_text).group(1)
+    search_term = r'-s\s\n\/network\/sequenced\/MiSeq_data\/\w{4,7}\/(shire_worksheet_numbered|Validation)\/' + re.escape(worksheet) + r'\/(\d{6}_M\d{5}_\d{4}_\d{9}-\w{5})\/SampleSheet.csv'
+
+    experiment_name = re.search(search_term, cmd_text).group(2)
 
     # get pipeline version, bed file names and AB threshold
 
@@ -344,7 +354,8 @@ parser.add_argument('--ws_2', action='store', required=True)
 parser.add_argument('--out_dir', action='store', required=True)
 args = parser.parse_args()
 
-xls_rep_1, xls_rep_2, neg_rep, fastq_bam_1, fastq_bam_2, kin_xls, vcf_dir_1, vcf_dir_2, cmd_log_1, cmd_log_2 = get_inputs(args.ws_1, args.ws_2)
+xls_rep_1, xls_rep_2, neg_rep, fastq_bam_1, fastq_bam_2, kin_xls, vcf_dir_1, vcf_dir_2, cmd_log_1, cmd_log_2, panel = get_inputs(args.ws_1, args.ws_2)
+
 
 check_result_df = pd.DataFrame(columns=[ 'Worksheet','Check', 'Description','Result'])
 run_details_df = pd.DataFrame(columns=['Worksheet', 'Pipeline version', 'Experiment name', 'Bed files', 'AB threshold'])
@@ -371,4 +382,4 @@ run_details_df = run_details(cmd_log_2, xls_rep_2, run_details_df)
 check_result_df = check_result_df.sort_values(by=['Worksheet'])
 run_details_df = run_details_df.sort_values(by=['Worksheet'])
 #create static html output
-generate_html_output(check_result_df,run_details_df, out_dir)
+generate_html_output(check_result_df,run_details_df, out_dir, panel)
