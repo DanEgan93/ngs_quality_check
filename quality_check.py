@@ -34,8 +34,8 @@ import re
 # TODO add version of pipeline to input
 def get_inputs(ws_1, ws_2):
 
-    ws_1_run_info = re.search(r'\/(\w{4,7})_(\d{6})_(v\.\d\.\d\.\d)\/', ws_1)    
-    ws_2_run_info = re.search(r'\/(\w{4,7})_(\d{6})_(v\.\d\.\d\.\d)\/', ws_2)  
+    ws_1_run_info = re.search(r'\/(\w{4,7})_(\d{6})_(v\d\.\d\.\d)\/', ws_1)    
+    ws_2_run_info = re.search(r'\/(\w{4,7})_(\d{6})_(v\d\.\d\.\d)\/', ws_2)  
 
     ws_1_panel = ws_1_run_info.group(1)
     ws_1_name = ws_1_run_info.group(2)
@@ -120,7 +120,7 @@ def results_excel_check(res, check_result_df):
     verify_bam_check_des = 'A check to determine if all samples in a worksheet have contamination < 3%'
     verify_bam_result = 'PASS'
     for value in verify_bam_list:
-        if value > 3:
+        if value >= 3:
             verify_bam_result = 'FAIL'
     
     check_result_df = check_result_df.append({'Check': verify_bam_check,
@@ -250,8 +250,9 @@ def fastq_bam_check(fastq_xls, check_result_df):
     fastq_bam_check_des = 'A check to determine that the expected number of reads are present in each FASTQ and BAM file'
     xls = pd.ExcelFile(fastq_xls)
     fastq_bam_df = pd.read_excel(xls, 'Check')
-    
-    if len(set(fastq_bam_df['Result'].values)) != 1:
+    fastq_bam = set(fastq_bam_df['Result'].values)
+
+    if 'FAIL' in fastq_bam:
         fastq_bam_check_result = 'FAIL'
     else:
         fastq_bam_check_result = 'PASS'
@@ -293,12 +294,10 @@ def run_details(cmd,xls_rep,run_details_df):
     allele_balance = 'ERROR'
     bed_files = []
 
-
-
     # get ws names for the cmd file and
     cmd_ws = re.search(r'(\d{6})\.commandline_usage_logfile', cmd).group(1)
+    xls_ws = re.search(r'(\d{6})-\d{2}-D\d{2}-\d{5}-\w{2,3}-\w+-\d{3}_S\d+\.v\d\.\d\.\d-results\.xlsx', xls_rep).group(1)
 
-    xls_ws = re.search(r'(\d{6})-\d{2}-D\d{2}-\d{5}-\w{2,3}-\w+-\d{3}_S\d\.v\d\.\d\.\d-results\.xlsx', xls_rep).group(1)
 
     # check that the cmd and xls report are from the same worksheet
     if cmd_ws != xls_ws:
@@ -310,7 +309,7 @@ def run_details(cmd,xls_rep,run_details_df):
     # get experiment name from command output
     with open(cmd, 'r') as file:
         cmd_text = file.read()
-    search_term = r'-s\s\n\/network\/sequenced\/MiSeq_data\/\w{4,7}\/(shire_worksheet_numbered|Validation)\/' + re.escape(worksheet) + r'\/(\d{6}_M\d{5}_\d{4}_\d{9}-\w{5})\/SampleSheet.csv'
+    search_term = r'-s\s\n\/network\/sequenced\/MiSeq_data\/\w{4,7}\/(shire_worksheet_numbered|Validation)\/200000-299999\/' + re.escape(worksheet) + r'\/(\d{6}_M\d{5}_\d{4}_\d{9}-\w{5})\/SampleSheet.csv'
 
     experiment_name = re.search(search_term, cmd_text).group(2)
 
