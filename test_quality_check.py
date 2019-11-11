@@ -42,7 +42,9 @@ def run_quality_check(ws_1, ws_2, out_dir, base):
 
 	command = f'python quality_check.py --ws_1 {ws_1} --ws_2 {ws_2} --out_dir {out_dir}'
 
-	# os.system(command)
+	print(command)
+
+	os.system(command)
 	print(f'HTML report for worksheets {ws_1_num}_{ws_2_num} is available!')
 
 def results_comparison(html_report):
@@ -79,6 +81,8 @@ summary_df = pd.DataFrame(columns=['Test case','Worksheet pair','Check 1', 'Chec
 
 test_case = 1
 for i in file_list:
+	if '0000' not in i:
+		continue
 	with open(i , 'r') as file:
 		html = file.read()
 		html_tables = pd.read_html(i)
