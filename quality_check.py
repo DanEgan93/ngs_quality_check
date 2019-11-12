@@ -259,7 +259,6 @@ def generate_html_output(check_result_df, run_details_df, output_dir, panel):
     '''
     Creating a static HTML file to display the results to the Clinical Scientist reviewing the quality check report
     '''
-
     base_html = '<h1>{} Quality Report<h1/><h3>Run details<h3/>'.format(panel)
     run_html = run_details_df.to_html(index=False, justify='left') + '<h3>Checks<h3/>'
     check_html = check_result_df.to_html(index=False, justify='left')
@@ -317,15 +316,14 @@ def run_details(cmd,xls_rep,run_details_df):
     bed_files.append(target_bed)
     bed_files.append(refined_target_bed)
     bed_files.append(coverage_bed)
-    bed_files = ", ".join(bed_files)
 
+    bed_files = ", ".join(bed_files)
     run_details_df = run_details_df.append({'Worksheet': worksheet,
                                             'Pipeline version': pipe_version,
                                             'Experiment name': experiment_name,
                                             'Bed files': bed_files,
                                             'AB threshold': allele_balance
                                             }, ignore_index=True)
-
 
     return run_details_df
     
@@ -338,7 +336,7 @@ args = parser.parse_args()
 
 xls_rep_1, xls_rep_2, neg_rep, fastq_bam_1, fastq_bam_2, kin_xls, vcf_dir_1, vcf_dir_2, cmd_log_1, cmd_log_2, panel = get_inputs(args.ws_1, args.ws_2)
 
-
+pd.set_option('display.max_colwidth', -1)
 check_result_df = pd.DataFrame(columns=[ 'Worksheet','Check', 'Description','Result'])
 run_details_df = pd.DataFrame(columns=['Worksheet', 'Pipeline version', 'Experiment name', 'Bed files', 'AB threshold'])
 out_dir = args.out_dir
@@ -347,6 +345,7 @@ out_dir = args.out_dir
 check_result_df = results_excel_check(xls_rep_1, check_result_df)
 check_result_df = vcf_dir_check(vcf_dir_1, check_result_df)
 check_result_df = fastq_bam_check(fastq_bam_1, check_result_df)
+
 
 # ws_2 checks
 check_result_df = results_excel_check(xls_rep_2, check_result_df)
