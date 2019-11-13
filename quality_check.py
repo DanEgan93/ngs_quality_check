@@ -259,14 +259,62 @@ def generate_html_output(check_result_df, run_details_df, output_dir, panel):
     '''
     Creating a static HTML file to display the results to the Clinical Scientist reviewing the quality check report
     '''
-    base_html = '<h1>{} Quality Report<h1/><h3>Run details<h3/>'.format(panel)
-    run_html = run_details_df.to_html(index=False, justify='left') + '<h3>Checks<h3/>'
-    check_html = check_result_df.to_html(index=False, justify='left')
-    html = base_html + run_html + check_html
+
+    with open('css_style.css') as file:
+        style = file.read()
+    run_details = run_details_df.to_html(index=False, justify='left')
+    check_details = check_result_df.to_html(index=False, justify='left')
+    report_head = f'<h1>{panel} Quality Report</h1>'
+    run_sub = '<h2>Run details<h2/>'
+    check_sub = '<h2>Checks<h2/>'
+    html = f'<!DOCTYPE html><html><head>{style}</head><body>{report_head}{run_sub}{run_details}{check_sub}{check_details}</body></hml>'
+
+    # Add class to PASS/FAIL to colour code
+    html = re.sub(r"<td>PASS</td>",r"<td class='PASS'>PASS</td>", html)
+    html = re.sub(r"<td>FAIL</td>",r"<td class='FAIL'>FAIL</td>", html)
+
     file_name = "_".join(run_details_df['Worksheet'].values.tolist()) + '_quality_checks.html'
     os.chdir(output_dir)
     with open(file_name, 'w') as file:
         file.write(html)
+
+
+def format_bed_files(bed_file_list, html):
+    '''
+    Todo reformat bed files so that these are added to a new table within the bed files cell.
+    '''
+    string = """
+    <table border=5 bordercolor=red>
+      <tr>
+        <td>
+          Target:
+        </td>
+        <td>
+          TSHC-all-isoforms-reported-30+10.target_regions.merged.191028.bed
+        </td>        
+        </td>
+    </tr>
+    <tr>
+      <td>
+        Refined target:
+      </td>
+      <td>
+        TSHC-refined-targets.191101.bed
+      </td>        
+      </td>
+    </tr>
+        <tr>
+      <td>
+        Coverage:
+      </td>
+      <td>
+        TSHC-longest-isoforms-only-5+5-refined-targets.annotated.191101.bed
+      </td>        
+      </td>
+    </tr>
+    </table>
+    """
+    pass
 
 def run_details(cmd,xls_rep,run_details_df):
     '''
