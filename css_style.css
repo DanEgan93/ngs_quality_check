@@ -13,12 +13,21 @@ table, th, td{
   padding: 3px;
 }
 th {
-  text-align: center
+  font-size: 18px;
+  text-align: center;
 }
+td {
+  font-size: 17px;
+  font-weight: lighter;
+}
+
 td.PASS{
   color: green;
 }
 td.FAIL{
   color: red;
+}
+table.bed{
+  padding: 0;
 }
 </style>
