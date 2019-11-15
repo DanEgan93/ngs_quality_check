@@ -259,6 +259,7 @@ def generate_html_output(check_result_df, run_details_df, output_dir, panel, bed
     '''
     Creating a static HTML file to display the results to the Clinical Scientist reviewing the quality check report.
     This function calls the format_bed_files function to add in bed file information.
+    This process involves changes directly to the html. TODO find replacement method to edit html.
     '''
 
     with open('css_style.css') as file:
@@ -289,12 +290,17 @@ def format_bed_files(run_html, bed_1, bed_2):
     information for the worksheet e.g. target bed, refined bed and coverage bed... This is then
     substituted into the html by searching for the ws search term e.g. 000001_bed_files.
     '''
+
     bed_1_html = bed_1[0]
     bed_1_search = bed_1[1]
     bed_2_html = bed_2[0]
     bed_2_search = bed_2[1]
     run_html = re.sub(f'{bed_1_search}', f'{bed_1_html}', run_html)
     run_html = re.sub(f'{bed_2_search}', f'{bed_2_html}', run_html)
+
+    # rename dataframe bed_table to bed_table... css classes cannot have spaces
+    run_html = re.sub('<td><table border="1" class="dataframe bed_table">', '<td><table border="1" class="bed_table">', run_html)
+
     return run_html
 
 def run_details(cmd,xls_rep,run_details_df):
@@ -352,7 +358,7 @@ def run_details(cmd,xls_rep,run_details_df):
         }, ignore_index=True)
 
     bed_df = bed_df.transpose()
-    bed_html = bed_df.to_html(justify='left', header=None, escape=True, classes='bed_table')
+    bed_html = bed_df.to_html(justify='left', header=None, escape=True, classes='bed_table', border=0)
 
     bed = [bed_html, bed_file_table]
 
