@@ -1,6 +1,7 @@
 import os
 import argparse
 import pandas as pd
+import re
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--test_ws_dir', action='store', required=True)
@@ -51,13 +52,21 @@ def results_comparison(html_report):
 	pass
 
 def generate_html_output(summary_df):
-	base_html = '<h1>Test Run Summary<h1/><h3>Results<h3/>'
-	summary_html = summary_df.to_html(index=False, justify='left')
-	html = base_html + summary_html
+
+	with open('css_style.css') as file:
+		style = file.read()
+	heading = '<h1>Test Run Summary<h1/><h3>Results<h3/>'
+	summary_table = summary_df.to_html(index=False, justify='left')
+
+	# Add class to PASS/FAIL to colour code
+	summary_table = re.sub(r"<td>PASS</td>",r"<td class='PASS'>PASS</td>", summary_table)
+	summary_table = re.sub(r"<td>FAIL</td>",r"<td class='FAIL'>FAIL</td>", summary_table)
+
+	html = f'<!DOCTYPE html><html><head>{style}</head><body>{heading}{summary_table}</body></hml>'
 	file_name = 'test_quality_check.html'
 
 	with open(file_name, 'w') as file:
-	    file.write(html)
+		file.write(html)
 
 ws_pairs = sort_pairing(pair_xls)
 worksheet_dirs = os.listdir(ws_dir)
@@ -80,16 +89,19 @@ summary_df = pd.DataFrame(columns=['Test case','Worksheet pair','Check 1', 'Chec
 
 
 test_case = 1
+
+print(file_list)
+
 for i in file_list:
 	if '0000' not in i:
 		continue
 	with open(i , 'r') as file:
 		html = file.read()
 		html_tables = pd.read_html(i)
-		pair = html_tables[1][6:7]['Worksheet'].values[0]
-		results = html_tables[1]['Result'].values.tolist()
 
-		results =  html_tables[1]['Result'].values.tolist()
+		# Gets kinship work sheet pair names
+		pair = html_tables[3][6:7]['Worksheet'].values[0]
+		results =  html_tables[3]['Result'].values.tolist()
 		summary_df = summary_df.append({'Test case': test_case,
 										'Worksheet pair': pair, 
 										'Check 1': results[0],
