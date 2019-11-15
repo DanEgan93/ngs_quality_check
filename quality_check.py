@@ -149,7 +149,7 @@ def neg_excel_check(neg_xls, check_result_df):
         num_exons_check_result = 'FAIL'
     
     cov_neg_exons_check = 'Contamination of negative sample'
-    cov_neg_exons_check_des = 'A check to determine if the max read depth of negative sample > 0'
+    cov_neg_exons_check_des = 'A check to determine if the max read depth of the negative sample is equal to 0'
     max_neg_coverage = neg_exon_df['Max'].values
 
     over_1x = []
@@ -334,7 +334,8 @@ def run_details(cmd,xls_rep,run_details_df):
     # get experiment name from command output
     with open(cmd, 'r') as file:
         cmd_text = file.read()
-    search_term = r'-s\s\n\/network\/sequenced\/MiSeq_data\/\w{4,7}\/(shire_worksheet_numbered|Validation)\/(?:200000-299999)?' + re.escape(worksheet) + r'\/(\d{6}_M\d{5}_\d{4}_\d{9}-\w{5})\/SampleSheet.csv'
+    search_term = r'-s\s\n\/network\/sequenced\/MiSeq_data\/\w{4,7}\/(shire_worksheet_numbered|Validation)\/(?:200000-299999\/)?(?:300000-399999\/)?' + re.escape(worksheet) + r'\/(\d{6}_M\d{5}_\d{4}_\d{9}-\w{5})\/SampleSheet.csv'
+
     experiment_name = re.search(search_term, cmd_text).group(2)
     
     if experiment_name == None:
