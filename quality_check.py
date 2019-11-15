@@ -255,15 +255,18 @@ def fastq_bam_check(fastq_xls, check_result_df):
 
     return check_result_df
 
-def generate_html_output(check_result_df, run_details_df, output_dir, panel):
+def generate_html_output(check_result_df, run_details_df, output_dir, panel, bed_1, bed_2):
     '''
-    Creating a static HTML file to display the results to the Clinical Scientist reviewing the quality check report
+    Creating a static HTML file to display the results to the Clinical Scientist reviewing the quality check report.
+    This function calls the format_bed_files function to add in bed file information.
     '''
 
     with open('css_style.css') as file:
         style = file.read()
     run_details = run_details_df.to_html(index=False, justify='left')
+    run_details = format_bed_files(run_details, bed_1, bed_2)
     check_details = check_result_df.to_html(index=False, justify='left')
+
     report_head = f'<h1>{panel} Quality Report</h1>'
     run_sub = '<h2>Run details<h2/>'
     check_sub = '<h2>Checks<h2/>'
@@ -279,42 +282,20 @@ def generate_html_output(check_result_df, run_details_df, output_dir, panel):
         file.write(html)
 
 
-def format_bed_files(bed_file_list, html):
+def format_bed_files(run_html, bed_1, bed_2):
     '''
-    Todo reformat bed files so that these are added to a new table within the bed files cell.
+    Adding the bed file html table to the run html table. The bed file information is passed as 
+    a list for each worksheet in the pair. [ws_1_html, search_term]. The html contains bed file
+    information for the worksheet e.g. target bed, refined bed and coverage bed... This is then
+    substituted into the html by searching for the ws search term e.g. 000001_bed_files.
     '''
-    string = """
-    <table border=5 bordercolor=red>
-      <tr>
-        <td>
-          Target:
-        </td>
-        <td>
-          TSHC-all-isoforms-reported-30+10.target_regions.merged.191028.bed
-        </td>        
-        </td>
-    </tr>
-    <tr>
-      <td>
-        Refined target:
-      </td>
-      <td>
-        TSHC-refined-targets.191101.bed
-      </td>        
-      </td>
-    </tr>
-        <tr>
-      <td>
-        Coverage:
-      </td>
-      <td>
-        TSHC-longest-isoforms-only-5+5-refined-targets.annotated.191101.bed
-      </td>        
-      </td>
-    </tr>
-    </table>
-    """
-    pass
+    bed_1_html = bed_1[0]
+    bed_1_search = bed_1[1]
+    bed_2_html = bed_2[0]
+    bed_2_search = bed_2[1]
+    run_html = re.sub(f'{bed_1_search}', f'{bed_1_html}', run_html)
+    run_html = re.sub(f'{bed_2_search}', f'{bed_2_html}', run_html)
+    return run_html
 
 def run_details(cmd,xls_rep,run_details_df):
     '''
@@ -324,6 +305,7 @@ def run_details(cmd,xls_rep,run_details_df):
     Add run details to run details_df
     '''
     bed_files = []
+    bed_df = pd.DataFrame(columns=['Target bed', 'Refined bed', 'Coverage bed'])
 
     # get ws names for the cmd file and
     cmd_ws = re.search(r'(\d{6})\.commandline_usage_logfile', cmd)
@@ -361,19 +343,32 @@ def run_details(cmd,xls_rep,run_details_df):
     refined_target_bed = config_df[config_df['key']=='refined_target_regions']['variable'].values[0].split('/')[-1]
     coverage_bed = config_df[config_df['key']=='coverage_regions']['variable'].values[0].split('/')[-1]
 
-    bed_files.append(target_bed)
-    bed_files.append(refined_target_bed)
-    bed_files.append(coverage_bed)
+    bed_file_table = f'{worksheet}_bed_files'
 
-    bed_files = ", ".join(bed_files)
+    bed_df = bed_df.append({
+        'Target bed': target_bed,
+        'Refined bed': refined_target_bed,
+        'Coverage bed': coverage_bed
+        }, ignore_index=True)
+
+    bed_df = bed_df.transpose()
+    bed_html = bed_df.to_html(justify='left', header=None, escape=True, classes='bed_table')
+
+    bed = [bed_html, bed_file_table]
+
+    with open('bed_test.html', 'w') as file:
+        file.write(bed_html)
+    # bed_files = ", ".join(bed_files)
+
+
     run_details_df = run_details_df.append({'Worksheet': worksheet,
                                             'Pipeline version': pipe_version,
                                             'Experiment name': experiment_name,
-                                            'Bed files': bed_files,
+                                            'Bed files': bed_file_table,
                                             'AB threshold': allele_balance
                                             }, ignore_index=True)
 
-    return run_details_df
+    return run_details_df, bed
     
 
 parser = argparse.ArgumentParser()
@@ -405,10 +400,11 @@ check_result_df = neg_excel_check(neg_rep, check_result_df)
 check_result_df = kinship_check(kin_xls, check_result_df)
 
 # run details
-run_details_df = run_details(cmd_log_1, xls_rep_1, run_details_df)
-run_details_df = run_details(cmd_log_2, xls_rep_2, run_details_df)
+run_details_df, bed_1 = run_details(cmd_log_1, xls_rep_1, run_details_df)
+run_details_df, bed_2 = run_details(cmd_log_2, xls_rep_2, run_details_df)
+
 # sort
 check_result_df = check_result_df.sort_values(by=['Worksheet'])
 run_details_df = run_details_df.sort_values(by=['Worksheet'])
 #create static html output
-generate_html_output(check_result_df,run_details_df, out_dir, panel)
+generate_html_output(check_result_df,run_details_df, out_dir, panel, bed_1, bed_2)
