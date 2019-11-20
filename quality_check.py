@@ -255,7 +255,7 @@ def fastq_bam_check(fastq_xls, check_result_df):
 
     return check_result_df
 
-def generate_html_output(check_result_df, run_details_df, output_dir, panel, bed_1, bed_2):
+def generate_html_output(check_result_df, run_details_df, panel, bed_1, bed_2):
     '''
     Creating a static HTML file to display the results to the Clinical Scientist reviewing the quality check report.
     This function calls the format_bed_files function to add in bed file information.
@@ -278,9 +278,8 @@ def generate_html_output(check_result_df, run_details_df, output_dir, panel, bed
     html = re.sub(r"<td>FAIL</td>",r"<td class='FAIL'>FAIL</td>", html)
 
     file_name = "_".join(run_details_df['Worksheet'].values.tolist()) + '_quality_checks.html'
-    os.chdir(output_dir)
-    with open(file_name, 'w') as file:
-        file.write(html)
+
+    return file_name, html
 
 
 def format_bed_files(run_html, bed_1, bed_2):
@@ -377,19 +376,17 @@ def run_details(cmd,xls_rep,run_details_df):
 
     return run_details_df, bed
     
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--ws_1', action='store', required=True, help='Path workshet 1 output files include TSHC_<ws>_version dir')
 parser.add_argument('--ws_2', action='store', required=True, help='Path workshet 2 output files include TSHC_<ws>_version dir')
-parser.add_argument('--out_dir', action='store', required=True, help='Path to output directory to store HTML output')
 args = parser.parse_args()
+
 
 xls_rep_1, xls_rep_2, neg_rep, fastq_bam_1, fastq_bam_2, kin_xls, vcf_dir_1, vcf_dir_2, cmd_log_1, cmd_log_2, panel = get_inputs(args.ws_1, args.ws_2)
 
 pd.set_option('display.max_colwidth', -1)
 check_result_df = pd.DataFrame(columns=[ 'Worksheet','Check', 'Description','Result'])
 run_details_df = pd.DataFrame(columns=['Worksheet', 'Pipeline version', 'Experiment name', 'Bed files', 'AB threshold'])
-out_dir = args.out_dir
 
 # ws_1 checks
 check_result_df = results_excel_check(xls_rep_1, check_result_df)
@@ -414,4 +411,15 @@ run_details_df, bed_2 = run_details(cmd_log_2, xls_rep_2, run_details_df)
 check_result_df = check_result_df.sort_values(by=['Worksheet'])
 run_details_df = run_details_df.sort_values(by=['Worksheet'])
 #create static html output
-generate_html_output(check_result_df,run_details_df, out_dir, panel, bed_1, bed_2)
+name, html_report = generate_html_output(check_result_df,run_details_df, panel, bed_1, bed_2)
+
+# write html report to both results directories
+ws_1_out = args.ws_1
+ws_2_out = args.ws_2
+
+os.chdir(ws_1_out)
+with open(name, 'w') as file:
+    file.write(html_report)
+os.chdir(ws_2_out)
+with open(name, 'w') as file:
+    file.write(html_report)
