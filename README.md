@@ -6,6 +6,7 @@ The checks have been described in table 1. The script records PASS/FAIL values f
 these as a static HTML output.
 
 table 1- checks completed by the quality_check.py script.
+
 \# | Worksheet| Check | Description
 ---|----------|-------|------------
  1 | ws_1 | VerifyBamId check | A check to determine if all samples in a worksheet have contamination < 3%
