@@ -25,6 +25,7 @@ table 1- checks completed by the quality_check.py script.
 ## Running the quality check script
 
 Example:
+
 '''
 $ cd /path/to/ngs_quality_check/
 
