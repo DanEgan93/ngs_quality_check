@@ -6,6 +6,14 @@ import re
 
 
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--ws_1', action='store', required=True, help='Path workshet 1 output files include TSHC_<ws>_version dir')
+parser.add_argument('--ws_2', action='store', required=True, help='Path workshet 2 output files include TSHC_<ws>_version dir')
+parser.add_argument('--out_dir', action='store', nargs='?', help='Specifing an output directory to store html reports')
+args = parser.parse_args()
+
+
+
 def get_inputs(ws_1, ws_2):
     '''
     All TSHC runs are conducted in pairs. The get_inputs function defines the
@@ -375,11 +383,6 @@ def run_details(cmd,xls_rep,run_details_df):
                                             }, ignore_index=True)
 
     return run_details_df, bed
-    
-parser = argparse.ArgumentParser()
-parser.add_argument('--ws_1', action='store', required=True, help='Path workshet 1 output files include TSHC_<ws>_version dir')
-parser.add_argument('--ws_2', action='store', required=True, help='Path workshet 2 output files include TSHC_<ws>_version dir')
-args = parser.parse_args()
 
 
 xls_rep_1, xls_rep_2, neg_rep, fastq_bam_1, fastq_bam_2, kin_xls, vcf_dir_1, vcf_dir_2, cmd_log_1, cmd_log_2, panel = get_inputs(args.ws_1, args.ws_2)
@@ -417,9 +420,15 @@ name, html_report = generate_html_output(check_result_df,run_details_df, panel, 
 ws_1_out = args.ws_1
 ws_2_out = args.ws_2
 
-os.chdir(ws_1_out)
-with open(name, 'w') as file:
-    file.write(html_report)
-os.chdir(ws_2_out)
-with open(name, 'w') as file:
-    file.write(html_report)
+if args.out_dir == None:
+    os.chdir(ws_1_out)
+    with open(name, 'w') as file:
+        file.write(html_report)
+    os.chdir(ws_2_out)
+    with open(name, 'w') as file:
+        file.write(html_report)
+else:
+    print(f'Saving html reports to {args.out_dir}')
+    os.chdir(args.out_dir)
+    with open(name, 'w') as file:
+        file.write(html_report)
