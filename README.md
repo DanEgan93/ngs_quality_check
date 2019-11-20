@@ -42,6 +42,6 @@ Full arguments:
 |-------------|------------------------------------------------------------------|
 | ws_1  | Path to the 1st TSHC output folder      |
 | ws_2    | Path to the 2nd TSHC output folder      |
-| out_dir     | Path to a folder to store the HTML report outputed from the script.  If no out_dir is specified the html report will saved in each of the TSHC output folders.|
+| out_dir     | Path to a folder to store the HTML report outputed from the script.\ If no out_dir is specified the html report will saved in each of the TSHC output folders.|
 
 
