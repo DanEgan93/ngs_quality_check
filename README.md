@@ -26,10 +26,10 @@ table 1- checks completed by the quality_check.py script.
 
 Example:
 
-'''
+```
 $ cd /path/to/ngs_quality_check/
 
 $ python quality_check.py --ws_1 /path/to/000001/TSHC_000001_v0.5.2/ --ws_2 /path/to/000002/TSHC_000002_v0.5.2/
 
-'''
+```
 
