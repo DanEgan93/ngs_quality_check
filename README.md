@@ -1,9 +1,6 @@
 # Automating TSHC Quality Checks
 
-A script to automate 11 manual quality checks completed after each paired MiSeq Universal pipeline run. 
-The script performs a series of checks on the paired output directories from a MiSeq Univeral (TSHC) run.
-The checks have been described in table 1. The script records PASS/FAIL values for each check and saves
-this to a static HTML file. The file, by default, is saved in the TSHC pipeline output folder.
+A script to automate 11 manual quality checks completed after each paired MiSeq Universal pipeline run. The script performs a series of checks on the paired output directories from a MiSeq Univeral (TSHC) run. The checks have been described in table 1. The script records PASS/FAIL values for each check and saves this to a static HTML file. The file, by default, is saved in the TSHC pipeline output folder.
 
 Table 1- checks completed by the quality_check.py script.
  
@@ -47,10 +44,7 @@ Full arguments:
 
 ## Quality script testing
 
-A mock set of TSHC output data has been generated to test the quality check script. The test_quality_check.py
-scipt can used to test multiple pairs of the mock TSHC data. The mock outputs and pairing excel spreadsheet
-are available on the S drive. The script generates a HTML report to summarise the results quality check results.
-The summary hmtl report will be stored in the test output directory.
+A mock set of TSHC output data has been generated to test the quality check script. The test_quality_check.py scipt can used to test multiple pairs of the mock TSHC data. The mock outputs and pairing excel spreadsheet are available on the S drive. The script generates a HTML report to summarise the results quality check results. The summary hmtl report will be stored in the test output directory.
 
 Example:
 
