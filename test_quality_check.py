@@ -4,15 +4,15 @@ import pandas as pd
 import re
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--test_ws_dir', action='store', required=True)
-parser.add_argument('--test_out_dir', action='store', required=True)
+parser.add_argument('--ws_dir', action='store', required=True)
+parser.add_argument('--out_dir', action='store', required=True)
 parser.add_argument('--pairing', action='store', required=True)
 args = parser.parse_args()
 
 
 pair_xls = args.pairing
-ws_dir = args.test_ws_dir
-out_dir = args.test_out_dir
+ws_dir = args.ws_dir
+out_dir = args.out_dir
 
 def sort_pairing(inp_xls):
 	# take pair xls and assign pairs
@@ -21,7 +21,6 @@ def sort_pairing(inp_xls):
 	pair_df = pd.DataFrame()
 	pair_xls = pd.ExcelFile(inp_xls)
 	pair_df = pd.read_excel(pair_xls,'pair', converters={'Worksheet_1':'{:0>6}'.format, 'Worksheet_2':'{:0>6}'.format})
-	print(pair_df)
 
 	for index,value in enumerate(pair_df.values):
 		test_num = index + 1
@@ -48,8 +47,6 @@ def run_quality_check(ws_1, ws_2, out_dir, base):
 	os.system(command)
 	print(f'HTML report for worksheets {ws_1_num}_{ws_2_num} is available!')
 
-def results_comparison(html_report):
-	pass
 
 def generate_html_output(summary_df):
 
@@ -90,8 +87,6 @@ summary_df = pd.DataFrame(columns=['Test case','Worksheet pair','Check 1', 'Chec
 
 test_case = 1
 
-print(file_list)
-
 for i in file_list:
 	if '0000' not in i:
 		continue
@@ -118,5 +113,4 @@ for i in file_list:
 	test_case += 1
 
 os.chdir('..')
-print(summary_df)
 generate_html_output(summary_df)
