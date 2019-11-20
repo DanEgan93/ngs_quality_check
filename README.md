@@ -1,3 +1,7 @@
 # Automating TSHC Quality Checks
 
-## A script to parse output files from the MiSeq Universal pipeline (TSHC) to determine if quality criteria has been met or not.
+A script to automate 11 manual quality checks completed after each paired MiSeq Universal pipeline run. 
+The table bellow describes the checks completed by the script.
+
+\# | Check | Description
+---|-------|------------
