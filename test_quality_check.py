@@ -9,13 +9,14 @@ parser.add_argument('-out_dir', action='store', required=True)
 parser.add_argument('-pairing', action='store', required=True)
 args = parser.parse_args()
 
-
 pair_xls = args.pairing
 ws_dir = args.ws_dir
 out_dir = args.out_dir
 
 def sort_pairing(inp_xls):
-	# take pair xls and assign pairs
+	'''
+	Parse pairing information from input excel spreadsheet and add to pandas data frame.
+	'''
 	pairing_dict = {}
 
 	pair_df = pd.DataFrame()
@@ -25,12 +26,14 @@ def sort_pairing(inp_xls):
 	for index,value in enumerate(pair_df.values):
 		test_num = index + 1
 		test_pair = value
-
 		pairing_dict[test_num] = test_pair.tolist()
 
 	return pairing_dict
 
 def run_quality_check(ws_1, ws_2, out_dir, base):
+	'''
+	Run command for quality_check.py script including specifying an output directory.
+	'''
 
 	ws_1_num = ws_1
 	ws_2_num = ws_2
@@ -43,13 +46,17 @@ def run_quality_check(ws_1, ws_2, out_dir, base):
 	command = f'python quality_check.py -ws_1 {ws_1} -ws_2 {ws_2} -out_dir {out_dir}'
 
 	print(command)
-
 	os.system(command)
+
 	print(f'HTML report for worksheets {ws_1_num}_{ws_2_num} is available!')
 
 
 def generate_html_output(summary_df):
 
+	'''
+	A summary html file is generated to summarise the PASS/FAIL composition of the test inputs.
+
+	'''
 	with open('css_style.css') as file:
 		style = file.read()
 	heading = '<h1>Test Run Summary<h1/><h3>Results<h3/>'
@@ -68,7 +75,7 @@ def generate_html_output(summary_df):
 ws_pairs = sort_pairing(pair_xls)
 worksheet_dirs = os.listdir(ws_dir)
 
-
+# Iterate through ws pairs and run_quality_check() for each pair
 for k,v in ws_pairs.items():
 	ws_1 = v[0]
 	ws_2 = v[1]
@@ -79,20 +86,22 @@ for k,v in ws_pairs.items():
 
 os.chdir(out_dir)
 file_list = os.listdir()
+
+# create df to store test summary results
 summary_df = pd.DataFrame(columns=['Test case','Worksheet pair','Check 1', 'Check 2', 
 									'Check 3', 'Check 4', 'Check 5','Check 6', 
 									'Check 7', 'Check 8', 'Check 9', 'Check 10',
 									'Check 11'])
 
-
 test_case = 1
 
-for i in file_list:
-	if '0000' not in i:
+# Test cases are all numbered to start with 0000
+for file in file_list:
+	if '0000' not in file:
 		continue
-	with open(i , 'r') as file:
+	with open(file , 'r') as file:
 		html = file.read()
-		html_tables = pd.read_html(i)
+		html_tables = pd.read_html(file)
 
 		# Gets kinship work sheet pair names
 		pair = html_tables[3][6:7]['Worksheet'].values[0]
@@ -112,5 +121,7 @@ for i in file_list:
 										'Check 11': results[10]}, ignore_index=True)
 	test_case += 1
 
+# Store summary report working directory
 os.chdir('..')
+# Create a html report summarizing PASS/FAIL composition of test cases
 generate_html_output(summary_df)
