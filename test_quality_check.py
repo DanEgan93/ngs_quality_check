@@ -4,9 +4,9 @@ import pandas as pd
 import re
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--ws_dir', action='store', required=True)
-parser.add_argument('--out_dir', action='store', required=True)
-parser.add_argument('--pairing', action='store', required=True)
+parser.add_argument('-ws_dir', action='store', required=True)
+parser.add_argument('-out_dir', action='store', required=True)
+parser.add_argument('-pairing', action='store', required=True)
 args = parser.parse_args()
 
 
