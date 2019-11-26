@@ -40,7 +40,7 @@ def run_quality_check(ws_1, ws_2, out_dir, base):
 	ws_1 = base + f'{ws_1}/' + f'{panel}_{ws_1_num}_{version}/'
 	ws_2 = base + f'{ws_2}/' + f'{panel}_{ws_2_num}_{version}/'
 
-	command = f'python quality_check.py --ws_1 {ws_1} --ws_2 {ws_2} --out_dir {out_dir}'
+	command = f'python quality_check.py -ws_1 {ws_1} -ws_2 {ws_2} -out_dir {out_dir}'
 
 	print(command)
 

@@ -7,9 +7,9 @@ import re
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--ws_1', action='store', required=True, help='Path workshet 1 output files include TSHC_<ws>_version dir')
-parser.add_argument('--ws_2', action='store', required=True, help='Path workshet 2 output files include TSHC_<ws>_version dir')
-parser.add_argument('--out_dir', action='store', nargs='?', help='Specifing an output directory to store html reports')
+parser.add_argument('-ws_1', action='store', required=True, help='Path workshet 1 output files include TSHC_<ws>_version dir')
+parser.add_argument('-ws_2', action='store', required=True, help='Path workshet 2 output files include TSHC_<ws>_version dir')
+parser.add_argument('-out_dir', action='store', nargs='?', help='Specifing an output directory to store html reports')
 args = parser.parse_args()
 
 
