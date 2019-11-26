@@ -104,8 +104,8 @@ for file in file_list:
 		html_tables = pd.read_html(file)
 
 		# Gets kinship work sheet pair names
-		pair = html_tables[3][6:7]['Worksheet'].values[0]
-		results =  html_tables[3]['Result'].values.tolist()
+		pair = html_tables[2][6:7]['Worksheet'].values[0]
+		results =  html_tables[2]['Result'].values.tolist()
 		summary_df = summary_df.append({'Test case': test_case,
 										'Worksheet pair': pair, 
 										'Check 1': results[0],
