@@ -51,7 +51,7 @@ Example:
 ```
 $ cd /path/to/ngs_quality_check/
 
-$ python test_quality_checks.py  -ws_dir /path/to/s_drive/test_worksheet/ -test_out /path/to/s_drive/test_output -pairing /path/to/ws_pairing.xlsx
+$ python test_quality_checks.py  -ws_dir /path/to/s_drive/test_worksheet/ -out_dir /path/to/s_drive/test_output -pairing /path/to/ws_pairing.xlsx
 
 ```
 
