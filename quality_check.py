@@ -7,8 +7,8 @@ import re
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-ws_1', action='store', required=True, help='Path workshet 1 output files include TSHC_<ws>_version dir')
-parser.add_argument('-ws_2', action='store', required=True, help='Path workshet 2 output files include TSHC_<ws>_version dir')
+parser.add_argument('-ws_1', action='store', required=True, help='Path to worksheet 1 output files include TSHC_<ws>_version dir')
+parser.add_argument('-ws_2', action='store', required=True, help='Path to worksheet 2 output files include TSHC_<ws>_version dir')
 parser.add_argument('-out_dir', action='store', nargs='?', help='Specifing an output directory to store html reports')
 args = parser.parse_args()
 
@@ -85,6 +85,7 @@ def get_inputs(ws_1, ws_2):
     cmd_log_1 = ws_1 + '{}.commandline_usage_logfile'.format(ws_1_name)
     cmd_log_2 = ws_2 + '{}.commandline_usage_logfile'.format(ws_2_name)
     kin_xls = ws_1 + '{}_{}.king.xlsx'.format(ws_1_name, ws_2_name)
+    
 
     return xls_rep_1, xls_rep_2, neg_rep, fastq_bam_1, fastq_bam_2, kin_xls, vcf_dir_1, vcf_dir_2, cmd_log_1, cmd_log_2, panel
 
