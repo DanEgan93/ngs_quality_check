@@ -151,9 +151,9 @@ def neg_excel_check(neg_xls, check_result_df):
 
     # number of exons check
     num_exons_check = 'Number of exons in negative sample'
-    num_exons_check_des = 'A check to determine if 1204 exons are present in the negative control (Coverage-exon tab)'
+    num_exons_check_des = 'A check to determine if 1209 exons are present in the negative control (Coverage-exon tab)'
     
-    if len(neg_exon_df) == 1204:
+    if len(neg_exon_df) == 1209:
         num_exons_check_result = 'PASS'
     else:
         num_exons_check_result = 'FAIL'
