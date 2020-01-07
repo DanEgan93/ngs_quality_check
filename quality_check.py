@@ -103,7 +103,9 @@ def results_excel_check(res, check_result_df):
     xls = pd.ExcelFile(res)
     hybqc_df = pd.read_excel(xls, 'Hyb-QC')
     verify_bam_id_df = pd.read_excel(xls, 'VerifyBamId')
-    worksheet_name = re.search(r'\/(\d{6})-.*', res).group(1)
+    
+    work_num = os.path.basename(res)
+    worksheet_name = re.search(r'\d{6}', work_num)[0]
     
     # list of all % coverage at 20x (excluding control) 
     coverage_list = hybqc_df[~hybqc_df['Sample'].str.contains('D00-00000')]['PCT_TARGET_BASES_20X'].values
@@ -143,8 +145,9 @@ def neg_excel_check(neg_xls, check_result_df):
 
     A description of the checks and a PASS/FAIL result for a given check are then added to the check_result_df
     '''
-
-    worksheet_name = re.search(r'\/(\d{6})-.*', neg_xls).group(1)
+    
+    work_num = os.path.basename(neg_xls)
+    worksheet_name = re.search(r'\d{6}', work_num)[0]
     
     xls = pd.ExcelFile(neg_xls)
     neg_exon_df = pd.read_excel(xls, 'Coverage-exon')
@@ -250,7 +253,9 @@ def fastq_bam_check(fastq_xls, check_result_df):
     A description of the check and a PASS/FAIL result for the check is then added to the check_result_df
     '''
     
-    worksheet_name = re.search(r'\/(\d{6})-.*', fastq_xls).group(1)
+    work_num = os.path.basename(fastq_xls)
+    worksheet_name = re.search(r'\d{6}', work_num)[0]
+    
 
     fastq_bam_check = 'FASTQ-BAM check'
     fastq_bam_check_des = 'A check to determine that the expected number of reads are present in each FASTQ and BAM file'
