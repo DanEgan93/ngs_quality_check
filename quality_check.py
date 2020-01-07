@@ -3,6 +3,7 @@ import pandas as pd
 import argparse
 import sys
 import re
+import numpy as np
 
 
 
@@ -205,6 +206,11 @@ def kinship_check(kin_xls, check_result_df):
         kinship_check_result = 'FAIL'
     else:
         kinship_check_result = 'PASS'
+    
+    # Additional step to set fail for any kinship result containing inf and nan values 
+    for kin in kinship_values:
+        if np.isnan(kin) == True or np.isinf(kin) == True:
+            kinship_check_result = 'FAIL'
     
     check_result_df = check_result_df.append({'Check': kinship_check,
                                                 'Description': kinship_check_des,
