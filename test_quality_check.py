@@ -2,6 +2,7 @@ import os
 import argparse
 import pandas as pd
 import re
+from natsort import natsorted
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-ws_dir', action='store', required=True)
@@ -51,14 +52,12 @@ def run_quality_check(ws_1, ws_2, out_dir, base):
 	print(f'HTML report for worksheets {ws_1_num}_{ws_2_num} is available!')
 
 
-def generate_html_output(summary_df):
+def generate_html_output(summary_df, style):
 
 	'''
 	A summary html file is generated to summarise the PASS/FAIL composition of the test inputs.
 
 	'''
-	with open('css_style.css') as file:
-		style = file.read()
 	heading = '<h1>Test Run Summary<h1/><h3>Results<h3/>'
 	summary_table = summary_df.to_html(index=False, justify='left')
 
@@ -67,13 +66,16 @@ def generate_html_output(summary_df):
 	summary_table = re.sub(r"<td>FAIL</td>",r"<td class='FAIL'>FAIL</td>", summary_table)
 
 	html = f'<!DOCTYPE html><html><head>{style}</head><body>{heading}{summary_table}</body></hml>'
-	file_name = 'test_quality_check.html'
+	file_name = 'test_check_summary.html'
 
 	with open(file_name, 'w') as file:
 		file.write(html)
 
 ws_pairs = sort_pairing(pair_xls)
 worksheet_dirs = os.listdir(ws_dir)
+with open('css_style.css') as file:
+  style = file.read()
+
 
 # Iterate through ws pairs and run_quality_check() for each pair
 for k,v in ws_pairs.items():
@@ -86,6 +88,7 @@ for k,v in ws_pairs.items():
 
 os.chdir(out_dir)
 file_list = os.listdir()
+file_list = natsorted(file_list)
 
 # create df to store test summary results
 summary_df = pd.DataFrame(columns=['Test case','Worksheet pair','Check 1', 'Check 2', 
@@ -94,6 +97,7 @@ summary_df = pd.DataFrame(columns=['Test case','Worksheet pair','Check 1', 'Chec
 									'Check 11'])
 
 test_case = 1
+
 
 # Test cases are all numbered to start with 0000
 for file in file_list:
@@ -121,7 +125,5 @@ for file in file_list:
 										'Check 11': results[10]}, ignore_index=True)
 	test_case += 1
 
-# Store summary report working directory
-os.chdir('..')
 # Create a html report summarizing PASS/FAIL composition of test cases
-generate_html_output(summary_df)
+generate_html_output(summary_df, style)
